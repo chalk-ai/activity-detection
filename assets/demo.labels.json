@@ -1,0 +1,116 @@
+{
+  "duration_s": 118.083,
+  "fps": 24,
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 14.0,
+      "label": "active",
+      "kind": "talking"
+    },
+    {
+      "start": 14.0,
+      "end": 26.0,
+      "label": "active",
+      "kind": "gaming"
+    },
+    {
+      "start": 26.0,
+      "end": 36.0,
+      "label": "active",
+      "kind": "talking"
+    },
+    {
+      "start": 36.0,
+      "end": 40.042,
+      "label": "transition",
+      "kind": "leaving"
+    },
+    {
+      "start": 40.042,
+      "end": 56.042,
+      "label": "break",
+      "kind": "away"
+    },
+    {
+      "start": 56.042,
+      "end": 72.042,
+      "label": "break",
+      "kind": "brb_screen"
+    },
+    {
+      "start": 72.042,
+      "end": 76.083,
+      "label": "transition",
+      "kind": "returning"
+    },
+    {
+      "start": 76.083,
+      "end": 90.083,
+      "label": "active",
+      "kind": "talking"
+    },
+    {
+      "start": 90.083,
+      "end": 104.083,
+      "label": "break",
+      "kind": "idle"
+    },
+    {
+      "start": 104.083,
+      "end": 118.083,
+      "label": "active",
+      "kind": "talking"
+    }
+  ],
+  "speech": [
+    {
+      "at": 0.6,
+      "text": "Hey hey, welcome back to the stream, everybody!"
+    },
+    {
+      "at": 5.5,
+      "text": "Today we're finally trying the no damage run."
+    },
+    {
+      "at": 10.0,
+      "text": "Thanks for the follows, I see you in chat."
+    },
+    {
+      "at": 15.5,
+      "text": "Okay, okay. Focus."
+    },
+    {
+      "at": 19.5,
+      "text": "Dodge, dodge... nice!"
+    },
+    {
+      "at": 23.0,
+      "text": "Let's go, that's phase two."
+    },
+    {
+      "at": 26.5,
+      "text": "Chat, that was so close!"
+    },
+    {
+      "at": 30.5,
+      "text": "Alright, I need some water. I'll be right back."
+    },
+    {
+      "at": 76.88,
+      "text": "Okay, I'm back. Did I miss anything?"
+    },
+    {
+      "at": 82.08,
+      "text": "Someone said the boss has a third phase? No way."
+    },
+    {
+      "at": 104.58,
+      "text": "Alright, one more attempt and then we call it."
+    },
+    {
+      "at": 110.58,
+      "text": "Seriously, thanks for hanging out tonight."
+    }
+  ]
+}

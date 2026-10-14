@@ -1,0 +1,88 @@
+{
+  "duration_s": 94.0,
+  "fps": 24,
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 12.0,
+      "label": "active",
+      "kind": "talking"
+    },
+    {
+      "start": 12.0,
+      "end": 24.0,
+      "label": "break",
+      "kind": "away"
+    },
+    {
+      "start": 24.0,
+      "end": 36.0,
+      "label": "active",
+      "kind": "gaming"
+    },
+    {
+      "start": 36.0,
+      "end": 46.0,
+      "label": "break",
+      "kind": "idle"
+    },
+    {
+      "start": 46.0,
+      "end": 58.0,
+      "label": "break",
+      "kind": "brb_screen"
+    },
+    {
+      "start": 58.0,
+      "end": 70.0,
+      "label": "active",
+      "kind": "talking"
+    },
+    {
+      "start": 70.0,
+      "end": 82.0,
+      "label": "break",
+      "kind": "idle"
+    },
+    {
+      "start": 82.0,
+      "end": 94.0,
+      "label": "active",
+      "kind": "talking"
+    }
+  ],
+  "speech": [
+    {
+      "at": 0.5,
+      "text": "What's up chat, good to see everyone."
+    },
+    {
+      "at": 5.0,
+      "text": "Let me know what we should play next."
+    },
+    {
+      "at": 26.0,
+      "text": "Come on, come on."
+    },
+    {
+      "at": 31.0,
+      "text": "Yes! Got it."
+    },
+    {
+      "at": 59.0,
+      "text": "Sorry about that, I'm back."
+    },
+    {
+      "at": 64.0,
+      "text": "Okay where were we."
+    },
+    {
+      "at": 82.5,
+      "text": "Last question from chat."
+    },
+    {
+      "at": 87.0,
+      "text": "That's it for today, see you tomorrow."
+    }
+  ]
+}

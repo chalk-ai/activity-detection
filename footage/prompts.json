@@ -1,0 +1,17 @@
+{
+  "shots": {
+    "talk_a": "Webcam view, static camera at eye level, of a young adult streamer with short curly dark hair, large white over-ear headphones and a mustard yellow hoodie, sitting in a black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of them. They talk cheerfully to the camera, smiling and gesturing with both hands.",
+    "talk_b": "Webcam view, static camera at eye level, of a young adult streamer with short curly dark hair, large white over-ear headphones and a mustard yellow hoodie, sitting in a black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of them. They laugh and talk to the camera, leaning slightly toward the microphone.",
+    "play": "Webcam view, static camera at eye level, of a young adult streamer with short curly dark hair, large white over-ear headphones and a mustard yellow hoodie, sitting in a black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of them. They concentrate on the monitor below the camera, playing a video game with one hand on the mouse, eyes moving quickly.",
+    "leave": "Webcam view, static camera at eye level, of a young adult streamer with short curly dark hair, large white over-ear headphones and a mustard yellow hoodie, sitting in a black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of them. They take off the headphones, stand up from the chair and walk out of frame to the left, leaving the chair spinning slowly.",
+    "empty": "Webcam view, static camera at eye level, of an empty black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of the chair, nobody in the room. The chair is still, the LED lights glow softly, nothing moves.",
+    "return": "Webcam view, static camera at eye level, of an empty black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of the chair, nobody in the room. A young adult with short curly dark hair in a mustard yellow hoodie walks into frame from the left, sits down in the chair and puts on white headphones.",
+    "phone": "Webcam view, static camera at eye level, of a young adult streamer with short curly dark hair, large white over-ear headphones and a mustard yellow hoodie, sitting in a black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of them. They lean back in the chair looking down at a phone held in both hands, quiet and not talking, barely moving.",
+    "drink": "Webcam view, static camera at eye level, of a young adult streamer with short curly dark hair, large white over-ear headphones and a mustard yellow hoodie, sitting in a black gaming chair at a desk in a small bedroom studio lit by purple and teal LED light strips, a black microphone on a boom arm in front of them. They sip from a white mug, put it down and start talking to the camera with a smile."
+  },
+  "seeds": [
+    1234,
+    98765
+  ],
+  "model": "Lightricks/LTX-Video-0.9.8-13B-distilled"
+}

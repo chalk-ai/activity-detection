@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stream Activity Detection</title>
+<style>
+  :root { --bg:#224A41; --panel:#1C3B34; --line:#32645B; --ink:#EFF5F3; --muted:#B9CFC7;
+          --accent:#BBD96D; --mint:#70CD96; --warm:#F8947F; --lav:#B29AF9; --blue:#81CEEA; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; padding:28px 24px; }
+  html.embed body { padding:20px 16px; }
+  html.embed .head { display:none; }
+  .mono { font:12px/16px ui-monospace,"SFMono-Regular",Menlo,monospace; text-transform:uppercase; letter-spacing:.06em; }
+  .head h1 { font-size:22px; font-weight:500; margin:0 0 4px; }
+  .head p { color:var(--muted); margin:0 0 18px; }
+  .tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .tabs button, .btn { font:12px/15px ui-monospace,Menlo,monospace; text-transform:uppercase; letter-spacing:.06em;
+    border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:20px; padding:9px 16px; cursor:pointer; }
+  .tabs button.on { border-color:var(--accent); color:var(--accent); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:var(--bg); }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .stage { display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:16px; }
+  @media (max-width:760px) { .stage { grid-template-columns:1fr; } }
+  video { width:100%; display:block; border-radius:4px; background:#000; aspect-ratio:16/9; }
+  .side { display:flex; flex-direction:column; gap:12px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:12px 14px; }
+  .state { display:flex; align-items:center; gap:10px; }
+  .dot { width:12px; height:12px; border-radius:50%; background:var(--muted); flex:none; }
+  .state .big { font-size:22px; font-weight:500; }
+  .prob { color:var(--muted); }
+  .sig { display:grid; grid-template-columns:70px 1fr 38px; align-items:center; gap:8px; margin:6px 0; }
+  .sig canvas { width:100%; height:22px; display:block; }
+  .sig .v { text-align:right; color:var(--muted); font:12px ui-monospace,Menlo,monospace; }
+  .plotwrap { margin-top:14px; }
+  #plot { width:100%; height:190px; display:block; cursor:pointer; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; color:var(--muted); margin-top:6px; }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:-1px; background:var(--c); }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:14px; }
+  .stats .card b { display:block; font-size:20px; font-weight:500; }
+  .stats .card small { color:var(--muted); }
+  .upload { display:none; }
+  .upload.on { display:block; }
+  .upload .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  .note { color:var(--muted); font-size:13px; }
+  .err { color:var(--warm); }
+</style>
+<script>
+  if (new URLSearchParams(location.search).has("embed")) document.documentElement.classList.add("embed");
+</script>
+</head>
+<body>
+  <div class="head">
+    <h1>Is the streamer live, or on a break?</h1>
+    <p>A vision pipeline on a Chalk GPU scores every quarter-second of a stream.</p>
+  </div>
+  <div class="tabs" role="tablist">
+    <button id="tab-sample" class="on" role="tab">Sample stream</button>
+    <button id="tab-upload" role="tab">Try your own clip</button>
+  </div>
+  <div class="upload card" id="upload">
+    <div class="row">
+      <input type="file" id="file" accept="video/*">
+      <button class="btn primary" id="analyze" disabled>Analyze clip</button>
+      <span class="note" id="upnote">Up to 30 seconds and 15 MB. Clips are analyzed in memory and deleted right away.</span>
+    </div>
+  </div>
+  <div class="stage">
+    <video id="video" controls playsinline preload="metadata" src="media/demo.mp4"></video>
+    <div class="side">
+      <div class="card state"><span class="dot" id="dot"></span><div><div class="big" id="stateText">Loading…</div><div class="prob mono" id="probText"></div></div></div>
+      <div class="card">
+        <div class="mono" style="color:var(--muted);margin-bottom:4px">Signals (trailing window)</div>
+        <div class="sig"><span class="mono">Person</span><canvas data-sig="person"></canvas><span class="v" data-v="person"></span></div>
+        <div class="sig"><span class="mono">Scene</span><canvas data-sig="scene"></canvas><span class="v" data-v="scene"></span></div>
+        <div class="sig"><span class="mono">Speech</span><canvas data-sig="speech"></canvas><span class="v" data-v="speech"></span></div>
+        <div class="sig"><span class="mono">Motion</span><canvas data-sig="motion"></canvas><span class="v" data-v="motion"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="plotwrap">
+    <canvas id="plot" aria-label="Confidence that the streamer is active over time"></canvas>
+    <div class="legend mono">
+      <span style="--c:#BBD96D">P(active), smoothed</span>
+      <span style="--c:#4f7f73">raw</span>
+      <span style="--c:#70CD96">detected active</span>
+      <span style="--c:#F8947F">detected break</span>
+      <span id="legendScript" style="--c:#B29AF9">script</span>
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+
+<script>
+const COLORS = { person:"#81CEEA", scene:"#B29AF9", speech:"#BBD96D", motion:"#F8947F" };
+const video = document.getElementById("video");
+const plot = document.getElementById("plot");
+let data = null, sample = null, objectUrl = null;
+
+function track(action, label) {
+  if (window.parent !== window) window.parent.postMessage({ type: "chalk-demo-interaction", action, label }, "*");
+}
+function reportHeight() {
+  if (window.parent !== window) window.parent.postMessage({ type: "chalk-demo-height", height: document.documentElement.scrollHeight }, "*");
+}
+new ResizeObserver(reportHeight).observe(document.body);
+
+function sizeCanvas(c) {
+  const r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  if (c.width !== Math.round(r.width * dpr)) { c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); }
+  const ctx = c.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return [ctx, r.width, r.height];
+}
+
+function drawPlot() {
+  const [ctx, w, h] = sizeCanvas(plot);
+  ctx.clearRect(0, 0, w, h);
+  if (!data) return;
+  const dur = data.duration_s, n = data.smoothed.length, fps = data.sample_fps;
+  const top = 34, bottom = h - 18, ph = bottom - top;
+  const x = (t) => (t / dur) * w, y = (p) => top + (1 - p) * ph;
+  // strips: script (ground truth) and detected segments
+  if (data.labels) {
+    for (const s of data.labels) {
+      ctx.fillStyle = s.label === "active" ? "#B29AF9" : s.label === "break" ? "#5c4a8a" : "#2b5048";
+      ctx.fillRect(x(s.start), 2, Math.max(1, x(s.end) - x(s.start)), 11);
+    }
+  }
+  for (const s of data.segments) {
+    ctx.fillStyle = s.label === "active" ? "#70CD96" : "#F8947F";
+    ctx.fillRect(x(s.start), 17, Math.max(1, x(s.end) - x(s.start)), 11);
+  }
+  // thresholds
+  ctx.strokeStyle = "#32645B"; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+  for (const p of [0.6, 0.4]) { ctx.beginPath(); ctx.moveTo(0, y(p)); ctx.lineTo(w, y(p)); ctx.stroke(); }
+  ctx.setLineDash([]);
+  const line = (arr, color, width) => {
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath();
+    arr.forEach((p, i) => { const px = x(i / fps), py = y(p); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+    ctx.stroke();
+  };
+  line(data.p_active, "#4f7f73", 1);
+  line(data.smoothed, "#BBD96D", 2);
+  // axis labels
+  ctx.fillStyle = "#B9CFC7"; ctx.font = "11px ui-monospace, Menlo, monospace";
+  ctx.fillText("1.0", 4, top + 10); ctx.fillText("0.0", 4, bottom - 2);
+  for (let t = 0; t <= dur; t += dur > 60 ? 30 : 10) ctx.fillText(`${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`, Math.min(w - 30, x(t) + 2), h - 4);
+  // playhead
+  const t = video.currentTime;
+  ctx.strokeStyle = "#EFF5F3"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x(t), 0); ctx.lineTo(x(t), bottom); ctx.stroke();
+  const i = Math.min(n - 1, Math.max(0, Math.floor(t * fps)));
+  ctx.fillStyle = "#BBD96D"; ctx.beginPath(); ctx.arc(x(t), y(data.smoothed[i]), 4, 0, 6.283); ctx.fill();
+}
+
+function drawSignals() {
+  if (!data) return;
+  const fps = data.sample_fps, i = Math.min(data.smoothed.length - 1, Math.max(0, Math.floor(video.currentTime * fps)));
+  const span = 20 * fps; // last 20 seconds
+  document.querySelectorAll("canvas[data-sig]").forEach((c) => {
+    const k = c.dataset.sig, arr = data.signals[k], [ctx, w, h] = sizeCanvas(c);
+    ctx.clearRect(0, 0, w, h);
+    const lo = Math.max(0, i - span);
+    ctx.strokeStyle = COLORS[k]; ctx.lineWidth = 1.5; ctx.beginPath();
+    for (let j = lo; j <= i; j++) { const px = ((j - lo) / span) * w, py = h - 2 - arr[j] * (h - 4); j === lo ? ctx.moveTo(px, py) : ctx.lineTo(px, py); }
+    ctx.stroke();
+    document.querySelector(`[data-v="${k}"]`).textContent = arr[i].toFixed(2);
+  });
+  const active = data.state[i] === 1, p = data.smoothed[i];
+  document.getElementById("dot").style.background = active ? "#70CD96" : "#F8947F";
+  document.getElementById("stateText").textContent = active ? "Active" : "On a break";
+  document.getElementById("probText").textContent = `P(active) ${p.toFixed(2)}`;
+}
+
+function frame() { drawPlot(); drawSignals(); requestAnimationFrame(frame); }
+
+function showStats() {
+  const s = [];
+  if (data.evaluation && data.evaluation.accuracy != null) s.push([`${(data.evaluation.accuracy * 100).toFixed(1)}%`, "agreement with the script, on footage the weights never saw"]);
+  s.push([`${(data.timings_ms.total_ms / 1000).toFixed(1)} s`, `to analyze ${Math.round(data.duration_s)} s of video${data.device ? " on " + data.device : ""}`]);
+  s.push([`${data.sample_fps} / s`, "frames scored, with the matching audio window"]);
+  s.push([`${data.segments.filter((x) => x.label === "break").length}`, "breaks detected"]);
+  document.getElementById("stats").innerHTML = s.map(([b, sm]) => `<div class="card"><b>${b}</b><small>${sm}</small></div>`).join("");
+  document.getElementById("legendScript").style.display = data.labels ? "" : "none";
+  reportHeight();
+}
+
+async function loadSample() {
+  if (!sample) sample = await (await fetch("api/recording")).json();
+  data = sample;
+  if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+  video.src = "media/demo.mp4";
+  showStats();
+}
+
+plot.addEventListener("click", (e) => {
+  if (!data) return;
+  const r = plot.getBoundingClientRect();
+  video.currentTime = ((e.clientX - r.left) / r.width) * data.duration_s;
+  track("seek_timeline");
+});
+let playReported = false;
+video.addEventListener("play", () => { if (!playReported) { playReported = true; track("play_video", data && data.labels ? "sample" : "upload"); } });
+
+const tabSample = document.getElementById("tab-sample"), tabUpload = document.getElementById("tab-upload");
+tabSample.onclick = () => { tabSample.classList.add("on"); tabUpload.classList.remove("on"); document.getElementById("upload").classList.remove("on"); loadSample(); track("select_clip", "sample"); };
+tabUpload.onclick = () => { tabUpload.classList.add("on"); tabSample.classList.remove("on"); document.getElementById("upload").classList.add("on"); reportHeight(); track("select_clip", "upload"); };
+
+const file = document.getElementById("file"), analyzeBtn = document.getElementById("analyze"), upnote = document.getElementById("upnote");
+file.onchange = () => { analyzeBtn.disabled = !file.files.length; upnote.className = "note"; };
+analyzeBtn.onclick = async () => {
+  const f = file.files[0];
+  if (!f) return;
+  if (f.size > 15 * 1024 * 1024) { upnote.textContent = "That file is over 15 MB."; upnote.className = "note err"; return; }
+  analyzeBtn.disabled = true; upnote.className = "note"; upnote.textContent = "Analyzing on the GPU…";
+  track("upload_clip");
+  const body = new FormData(); body.append("clip", f);
+  try {
+    const r = await fetch("api/analyze", { method: "POST", body });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.detail || "Analysis failed");
+    data = j;
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(f);
+    video.src = objectUrl;
+    upnote.textContent = j.truncated ? "Analyzed the first 30 seconds." : "Done. Press play.";
+    showStats();
+  } catch (e) {
+    upnote.textContent = e.message; upnote.className = "note err";
+  } finally { analyzeBtn.disabled = false; }
+};
+
+loadSample().then(() => requestAnimationFrame(frame)).catch((e) => { document.getElementById("stateText").textContent = "Couldn't load the analysis"; console.error(e); });
+</script>
+</body>
+</html>
