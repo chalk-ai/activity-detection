@@ -30,8 +30,7 @@ frames       ──▶ frame difference ─▶ motion (mean 4 s) ┘
 ./deploy.py
 ```
 
-Credentials come from the SDK’s ambient credentials from `chalk login`, or set `CHALK_API_SERVER`, `CHALK_CLIENT_ID`,
-`CHALK_CLIENT_SECRET` and `CHALK_ENVIRONMENT_ID`. Open the printed `web_url`.
+Credentials come from your existing `chalk login`. Open the printed `web_url`.
 
 ## API
 
