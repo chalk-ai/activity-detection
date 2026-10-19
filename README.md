@@ -27,7 +27,7 @@ frames       ──▶ frame difference ─▶ motion (mean 4 s) ┘
 ## Run it
 
 ```bash
-./deploy.py --gpu nvidia-l4
+./deploy.py
 ```
 
 Credentials come from the SDK’s ambient credentials from `chalk login`, or set `CHALK_API_SERVER`, `CHALK_CLIENT_ID`,
@@ -82,5 +82,5 @@ OpenAI CLIP ViT-B/32 (MIT), Silero VAD (MIT).
 
 The SDK reads credentials, API host, and the selected environment from your existing
 `chalk login` in `~/.chalk.yml`, including project-scoped and default logins.
-For unattended runs, `CHALK_CLIENT_ID` and `CHALK_CLIENT_SECRET` remain supported. Where available, `--env-id`
-overrides the target environment; otherwise the SDK uses your login or environment settings.
+For unattended runs, `CHALK_CLIENT_ID` and `CHALK_CLIENT_SECRET` remain supported.
+The examples use the current environment selected by your Chalk login.

@@ -7,13 +7,11 @@
 """Deploy the activity-detection demo (server.py, pipeline.py, assets/) as a GPU ScalingGroup.
 
 Credentials come from your existing `chalk login` (or the CHALK_* env vars):
-    ./deploy.py [--env-id <environment>] [--gpu nvidia-l4]
+    ./deploy.py
 """
 
 from __future__ import annotations
 
-import argparse
-import os
 import time
 from pathlib import Path
 
@@ -31,15 +29,6 @@ PREFETCH = (
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--name", default="activity-detection")
-    parser.add_argument("--env-id", default=None)
-    parser.add_argument("--gpu", default="nvidia-l4")
-    parser.add_argument("--ready-timeout", type=float, default=1800.0)
-    args = parser.parse_args()
-
-    if args.env_id:
-        os.environ["CHALK_ENVIRONMENT"] = args.env_id
     from chalkcompute import Image, ReadinessProbe, ScalingGroup
 
     image = (
@@ -68,8 +57,8 @@ def main() -> None:
 
     sg = ScalingGroup(
         image=image,
-        name=args.name,
-        gpu=args.gpu,
+        name='activity-detection',
+        gpu='nvidia-l4',
         cpu="4",
         memory="16Gi",
         env={"PORT": "8080", "ASSETS_DIR": "/assets", "HF_HUB_OFFLINE": "1"},
@@ -83,7 +72,7 @@ def main() -> None:
         max_replicas=1,
     )
     t0 = time.monotonic()
-    sg.deploy(build_timeout=2400.0, ready_timeout=args.ready_timeout)
+    sg.deploy(build_timeout=2400.0, ready_timeout=1800.0)
     print(f"deploy returned after {time.monotonic() - t0:.0f}s")
     print("web_url:", sg.web_url)
 
