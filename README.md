@@ -30,7 +30,7 @@ frames       ──▶ frame difference ─▶ motion (mean 4 s) ┘
 ./deploy.py --gpu nvidia-l4
 ```
 
-Credentials come from `chalk config`, or set `CHALK_API_SERVER`, `CHALK_CLIENT_ID`,
+Credentials come from the SDK’s ambient credentials from `chalk login`, or set `CHALK_API_SERVER`, `CHALK_CLIENT_ID`,
 `CHALK_CLIENT_SECRET` and `CHALK_ENVIRONMENT_ID`. Open the printed `web_url`.
 
 ## API
@@ -77,3 +77,10 @@ ground-truth script for each recording.
 
 The code is Apache-2.0. Model weights keep their own licenses: torchvision's COCO detector,
 OpenAI CLIP ViT-B/32 (MIT), Silero VAD (MIT).
+
+## Local authentication
+
+The SDK reads credentials, API host, and the selected environment from your existing
+`chalk login` in `~/.chalk.yml`, including project-scoped and default logins.
+For unattended runs, `CHALK_CLIENT_ID` and `CHALK_CLIENT_SECRET` remain supported. Where available, `--env-id`
+overrides the target environment; otherwise the SDK uses your login or environment settings.
